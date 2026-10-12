@@ -1,5 +1,14 @@
 venv/
+.venv/
 __pycache__/
+*.pyc
 .env
 .vscode/
-*.pyc
+.idea/
+.pytest_cache/
+.coverage
+htmlcov/
+data/*.db*
+data/*.sqlite*
+*.egg-info/
+legacy/data_sqlite/
