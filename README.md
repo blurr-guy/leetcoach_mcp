@@ -1,4 +1,4 @@
-# 🤖 LeetCoach MCP
+# 🤖 LeetCoach MCP SERVER
 
 An AI-powered LeetCode coach exposed as a **Model Context Protocol (MCP)** server.
 It lets an AI assistant recommend problems, record attempts, analyze performance,
