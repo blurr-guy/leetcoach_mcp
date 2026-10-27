@@ -155,6 +155,65 @@ PY
 Expected output: `recommend_problem`, `log_attempt`, `analyze_performance`,
 `generate_prep_plan`.
 
+## 🌐 Connect a web LLM (ChatGPT / Claude web) via ngrok
+
+Desktop clients launch a local process over stdio, but **web** LLMs can only
+reach a **public HTTPS URL**. So you run the server in HTTP mode and expose it
+through a tunnel.
+
+> ⚠️ The server has **no authentication**. Anyone with the URL can read and write
+> your local database. Use a throwaway tunnel, and stop it when you are done.
+
+### 1. Run the server in HTTP mode
+
+```bash
+source .venv/bin/activate
+LEETCOACH_TRANSPORT=http LEETCOACH_PORT=8000 leetcode-coach
+```
+
+It now serves the MCP endpoint at `http://127.0.0.1:8000/mcp`. (Put these in
+`.env` instead of exporting if you prefer.) Quick local check:
+
+```bash
+curl -s http://127.0.0.1:8000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}'
+```
+
+### 2. Expose it with ngrok
+
+Install ngrok, then (one time) add your authtoken from
+https://dashboard.ngrok.com/get-started/your-authtoken:
+
+```bash
+ngrok config add-authtoken <YOUR_TOKEN>
+ngrok http 8000
+```
+
+Copy the `https://…` forwarding URL it prints and append `/mcp`, e.g.
+`https://1a2b-3c4d.ngrok-free.app/mcp`. Leave both the server and ngrok running.
+
+### 3. Add it in the web LLM
+
+- **Claude web** — Settings → Connectors → *Add custom connector*, paste the
+  `/mcp` URL. Leave authentication as **none**.
+- **ChatGPT** — Settings → Connectors → *Add* (enable Developer mode first),
+  paste the `/mcp` URL and choose **No authentication**.
+
+Both features require a paid plan (Claude Pro/Max or ChatGPT Plus/Pro) and may
+roll out gradually. If the connector reports an error, run the `curl` from step 1
+to confirm the server is up, then re-check the exact URL.
+
+### Notes
+
+- A free ngrok URL **changes every restart** — update the connector URL to match.
+- The `enable_dns_rebinding_protection=False` override in `src/server.py` is
+  what stops the SDK replying `HTTP 421` to the tunnel's Host header. If you
+  serve behind another hostname, remove/keep it accordingly.
+- stdio stays the default; setting `LEETCOACH_TRANSPORT=http` only affects the
+  process you launch with it.
+
 ## 💬 Example prompts
 
 Once connected, just talk to the assistant:
