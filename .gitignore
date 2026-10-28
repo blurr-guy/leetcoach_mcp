@@ -12,3 +12,4 @@ data/*.db*
 data/*.sqlite*
 *.egg-info/
 legacy/data_sqlite/
+.env
